@@ -22,3 +22,9 @@ When a user removes themsevles from a pool, they retain administrative privilege
 A user pool is always in one of two states: shuffled or not shuffled.  A shuffled pool is one where users have been given assignments (were assigned other users within the pool).  It is technically possible to shuffle a 1 or 2 user pool, though it makes no goddamn sense.  Adding or removing a user from a shuffled pool will make the pool unshuffled.  Adding a user to a shuffled pool and then removing that user from it will take the pool back to its shuffled state, however removing a user and then adding same user back will not.
 
 Upon successful shuffling of a pool, the system will contact each member by email, notifying them of their assignment.  Each member of the pool can subsequently log into the application and request the same reminder be sent to them at any time.  Shuffling an already shuffled pool is permissible and will result in new assignments being sent out.
+
+## Known Issues
+* Help section is empty.
+* There's a bunch of unused and commented out code.
+* Email pattern regular expression may have a bug in it.
+* JDO and Big Table is a combination of ill-fitting abstractions resulting in suboptimal performance and long start-up times.  On the plus side, we're all busy people these days and such slow-downs give us precious opportunities to consider heady topics like why god allows bad things to happen to good people and did I really turn off the stove.
