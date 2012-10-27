@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+	<!--
+	<context-param>
+		<param-name>com.sun.faces.enableThreading</param-name>
+		<param-value>false</param-value>
+	</context-param>
+	-->
+ 	
+	<listener>
+		<listener-class>zinger.secsan.db.JdoStateManager</listener-class>
+	</listener>
+	
+	<servlet>
+		<servlet-name>back-end</servlet-name>
+		<servlet-class>zinger.secsan.server.BackEndServiceImpl</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>notify_assignment</servlet-name>
+		<servlet-class>zinger.secsan.server.NotifyAssignmentServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>emailanon</servlet-name>
+		<servlet-class>zinger.secsan.server.EmailAnonServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>back-end</servlet-name>
+		<url-pattern>/back-end</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>back-end</servlet-name>
+		<url-pattern>/santaui/back-end</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>notify_assignment</servlet-name>
+		<url-pattern>/job/notify_assignment</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
+		<servlet-name>emailanon</servlet-name>
+		<url-pattern>/_ah/mail/anon*</url-pattern>
+	</servlet-mapping>
+	
+    <security-constraint>
+        <web-resource-collection>
+            <url-pattern>/cron/*</url-pattern>
+			<url-pattern>/job/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+</web-app>

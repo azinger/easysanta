@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<project name="Secret Santa, GAE edition" default="war.assemble">
+	<property file="${basedir}/build.properties"/>
+	
+	<path id="libs">
+		<fileset dir="${httpclient.home}/lib" includes="http*.jar"/>
+		<fileset dir="${bsheet.home}" includes="bsheet_bundle.jar"/>
+		<!--fileset dir="${hsqldb.home}/lib" includes="hsqldb.jar"-->
+		<fileset dir="${guava.home}" includes="*.jar" excludes="*gwt*.jar"/>
+		<fileset dir="${gaesdk.home}/lib/user" includes="**/*.jar"/>
+		<fileset dir="${gaesdk.home}/lib/user/orm" includes="*.jar"/>
+		<fileset dir="${gwt.home}" includes="gwt-servlet.jar"/>
+	</path>
+	
+	<path id="cp">
+		<path refid="libs"/>
+		<!--fileset dir="${jboss.home}/common/lib" includes="*.jar"/-->
+		<fileset dir="${gwt.home}" includes="**/*.jar"/>
+		<!--fileset dir="${javamail.home}" includes="lib/*.jar"/-->
+	</path>
+	
+	<path id="enhancer.classpath">
+		<pathelement path="${cls.home}" />
+		<!-- The server side code instantiates client side objects, so the enhancer
+		 will need gwt user to resolve all the imports it sees. -->
+		<fileset file="${gwt.home}/gwt-user.jar" />
+		<fileset dir="${gaesdk.home}/lib"
+			includes="shared/**/*.jar, tools/**/*.jar, user/*.jar" />
+	</path>
+
+	<target name="compile">
+		<mkdir dir="${src.home}"/>
+		<mkdir dir="${cls.home}"/>
+		<javac srcdir="${src.home}" classpathref="cp" destdir="${cls.home}" includeantruntime="false" debug="true"/>
+
+    	<!-- enhance classes -->
+    	<taskdef name="enhance"
+        	classpathref="enhancer.classpath"
+        	classname="org.datanucleus.enhancer.tools.EnhancerTask" />
+    	<enhance classpathref="enhancer.classpath" failonerror="true">
+			<fileset dir="${cls.home}" includes="zinger/secsan/gae/**/*.class" />
+    	</enhance>
+
+		<copy todir="${cls.home}">
+			<fileset dir="${src.home}" excludes="**/*.java"/>
+		</copy>
+	</target>
+	
+	<target name="api">
+		<mkdir dir="${api.home}"/>
+		<javadoc sourcepath="${src.home}" classpathref="cp" destdir="${api.home}"/>
+	</target>
+	
+	<target name="gwtc">
+		<java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+			<classpath>
+				<pathelement location="${src.home}"/>
+				<path refid="cp"/>
+			</classpath>
+			<jvmarg value="-Xmx256M"/>
+			<arg value="-style"/><arg value="PRETTY"/>
+			<arg value="-war"/><arg value="${war.home}"/>
+			<arg value="${mod.name}"/>
+		</java>
+	</target>
+	
+	<target name="gwt.uptodate">
+		<uptodate property="gwt.uptodate" targetfile="${war.home}/santaui/santaui.nocache.js">
+			<srcfiles dir="${src.home}/zinger/secsan/client"/>
+		</uptodate>
+	</target>
+	
+	<target name="gwt" depends="gwt.uptodate, compile" unless="${gwt.uptodate}">
+		<antcall target="gwtc">
+			<param name="mod.name" value="zinger.secsan.santaui"/>
+		</antcall>
+	</target>
+	
+	<target name="war.assemble" depends="gwt">
+		<copy todir="${war.home}">
+			<fileset dir="${htdoc.home}"/>
+		</copy>
+		<mkdir dir="${war.home}/WEB-INF/classes"/>
+		<copy todir="${war.home}/WEB-INF/classes">
+			<fileset dir="${cls.home}"/>
+		</copy>
+		<mkdir dir="${war.home}/WEB-INF/lib"/>
+		<copy todir="${war.home}/WEB-INF/lib" flatten="true">
+			<path refid="libs"/>
+		</copy>
+	</target>
+</project>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+	<!--
+	<cron>
+		<url>/cron/dayroll</url>
+		<description>Performs day roll</description>
+		<schedule>every day 23:00</schedule>
+		<timezone>America/New_York</timezone>
+	</cron>
+	-->
+</cronentries>

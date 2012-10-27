@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<module rename-to="santaui">
+	<inherits name="com.google.gwt.user.User"/>
+	<inherits name="com.google.gwt.rpc.RPC"/>
+	<entry-point class="zinger.secsan.client.SantaUi"/>
+</module>
