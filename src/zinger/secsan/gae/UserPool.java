@@ -45,18 +45,18 @@ public class UserPool
 			return false;
 		final UserPool other = (UserPool)obj;
 		return 
-			Objects.equal(this.getUser(), other.getUser()) &&
-			Objects.equal(this.getPool(), other.getPool());
+			com.google.common.base.Objects.equal(this.getUser(), other.getUser()) &&
+			com.google.common.base.Objects.equal(this.getPool(), other.getPool());
 	}
 	
 	public int hashCode()
 	{
-		return Objects.hashCode(getUser(), getPool());
+		return com.google.common.base.Objects.hashCode(getUser(), getPool());
 	}
 	
 	public String toString()
 	{
-		return Objects.toStringHelper(this)
+		return com.google.common.base.Objects.toStringHelper(this)
 			.add("user", getUser())
 			.add("pool", getPool())
 			.add("assignedToUser", getAssignedToUser())

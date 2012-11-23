@@ -33,17 +33,17 @@ public class EmailAnon
 		if(!(obj instanceof EmailAnon))
 			return false;
 		final EmailAnon other = (EmailAnon)obj;
-		return Objects.equal(this.getEmail(), other.getEmail());
+		return com.google.common.base.Objects.equal(this.getEmail(), other.getEmail());
 	}
 	
 	public int hashCode()
 	{
-		return Objects.hashCode(getEmail());
+		return com.google.common.base.Objects.hashCode(getEmail());
 	}
 	
 	public String toString()
 	{
-		return Objects.toStringHelper(this)
+		return com.google.common.base.Objects.toStringHelper(this)
 			.add("email", getEmail())
 			.toString();
 	}
