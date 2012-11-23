@@ -31,7 +31,7 @@
 	<target name="compile">
 		<mkdir dir="${src.home}"/>
 		<mkdir dir="${cls.home}"/>
-		<javac srcdir="${src.home}" classpathref="cp" destdir="${cls.home}" includeantruntime="false" debug="true"/>
+		<javac srcdir="${src.home}" classpathref="cp" destdir="${cls.home}" includeantruntime="false" debug="true" source="1.6" target="1.6"/>
 
     	<!-- enhance classes -->
     	<taskdef name="enhance"
