@@ -29,6 +29,11 @@
 		<servlet-class>zinger.secsan.server.EmailAnonServlet</servlet-class>
 	</servlet>
 	
+	<servlet>
+		<servlet-name>mail</servlet-name>
+		<servlet-class>zinger.secsan.server.MailServlet</servlet-class>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>back-end</servlet-name>
 		<url-pattern>/back-end</url-pattern>
@@ -46,6 +51,11 @@
 	<servlet-mapping>
 		<servlet-name>emailanon</servlet-name>
 		<url-pattern>/_ah/mail/anon*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>mail</servlet-name>
+		<url-pattern>/_ah/mail/list*</url-pattern>
 	</servlet-mapping>
 	
     <security-constraint>
