@@ -50,6 +50,7 @@ public class MailListServlet extends HttpServlet
 	
 	protected String appId;
 	protected String emailDomainSuffix;
+	protected String sysEmail;
 	
 	protected final StateManager stateManager = StateManagerFactory.INSTANCE.getStateManager();
 	
@@ -57,6 +58,7 @@ public class MailListServlet extends HttpServlet
 	{
 		appId = config.getInitParameter("appId");
 		emailDomainSuffix = appId + DOMAIN_SUFFIX;
+		sysEmail = "system@" + emailDomainSuffix;
 	}
 	
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
@@ -79,14 +81,10 @@ public class MailListServlet extends HttpServlet
 			}
 			
 			if(routing.containsKey(Message.RecipientType.TO) || routing.containsKey(Message.RecipientType.CC))
-			{
-				// TO DO: send forward
-			}
+				routeMessage(mailSession, incomingMessage, routing.get(Message.RecipientType.TO), routing.get(Message.RecipientType.CC));
 			
 			if(routing.containsKey(Message.RecipientType.BCC))
-			{
-				// TO DO: send rejection
-			}
+				rejectMessage(mailSession, incomingMessage, routing.get(Message.RecipientType.BCC));
 		}
 		catch(final MessagingException ex)
 		{
@@ -136,5 +134,49 @@ public class MailListServlet extends HttpServlet
 	protected Pair<? extends Iterable<Address>, ? extends Iterable<Address>> routeAddresses(final Address[] recipients, final Address sender) throws MessagingException, NoSuchElementException
 	{
 		return routeAddresses(Arrays.asList(recipients), sender);
+	}
+	
+	protected void routeMessage(
+		final Session mailSession, 
+		final MimeMessage incomingMessage, 
+		final Collection<Address> to, 
+		final Collection<Address> cc
+	) throws MessagingException, IOException
+	{
+		final MimeMessage outgoingMessage = new MimeMessage(mailSession);
+		final Address sender = 
+			!to.isEmpty() ?
+				to.iterator().next() :
+				!cc.isEmpty() ?
+					cc.iterator().next() :
+					new InternetAddress(sysEmail);
+		outgoingMessage.setFrom(sender);
+		outgoingMessage.setSubject(incomingMessage.getSubject());
+		
+		final Object originalContent = incomingMessage.getContent();
+		if(originalContent instanceof Multipart)
+			outgoingMessage.setContent((Multipart)originalContent);
+		else if(originalContent instanceof String)
+			outgoingMessage.setText((String)originalContent);
+		else if(originalContent instanceof InputStream)
+		{
+			final BodyPart body = new MimeBodyPart((InputStream)originalContent);
+			final Multipart multipart = new MimeMultipart();
+			multipart.addBodyPart(body);
+			outgoingMessage.setContent(multipart);
+		}
+		else
+			throw new IllegalArgumentException(String.format("Could not process content type %s", originalContent.getClass().getName()));
+		
+		Transport.send(outgoingMessage);
+	}
+	
+	protected void rejectMessage(
+		final Session mailSession, 
+		final MimeMessage incomingMessage, 
+		final Collection<Address> rejected
+	) throws MessagingException
+	{
+		throw new UnsupportedOperationException();
 	}
 }
