@@ -19,9 +19,45 @@ import zinger.secsan.db.*;
 
 public class MailListServlet extends HttpServlet
 {
+	public static final Function<String, InternetAddress> STRING_TO_ADDRESS = new Function<String, InternetAddress>()
+	{
+		public InternetAddress apply(final String email)
+		{
+			try
+			{
+				return new InternetAddress(email);
+			}
+			catch(final AddressException ex)
+			{
+				ex.printStackTrace();
+				return null;
+			}
+		}
+	};
+	
+	public static final Function<Address, String> ADDRESS_TO_STRING = new Function<Address, String>()
+	{
+		public String apply(final Address address)
+		{
+			return address instanceof InternetAddress ? ((InternetAddress)address).getAddress() : address.toString();
+		}
+	};
+	
 	protected final Logger log = Logger.getLogger(getClass().getName());
 	
 	public static final String LIST_EMAIL_PREFIX = "list-";
+	public static final String DOMAIN_SUFFIX = ".appspotmail.com";
+	
+	protected String appId;
+	protected String emailDomainSuffix;
+	
+	protected final StateManager stateManager = StateManagerFactory.INSTANCE.getStateManager();
+	
+	public void init(final ServletConfig config)
+	{
+		appId = config.getInitParameter("appId");
+		emailDomainSuffix = appId + DOMAIN_SUFFIX;
+	}
 	
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
 	{
@@ -31,11 +67,12 @@ public class MailListServlet extends HttpServlet
 		{
 			final MimeMessage incomingMessage = new MimeMessage(mailSession, request.getInputStream());
 			
-			final String pool = findPool(incomingMessage);
+			//final String pool = findPool(incomingMessage);
 			
 			final MimeMessage outgoingMessage = new MimeMessage(mailSession);
 			
-			outgoingMessage.setSender(incomingMessage.getSender());
+			//outgoingMessage.setSender(incomingMessage.getSender());
+			//outgoingMessage.setSender(
 			for(final Message.RecipientType recipientType : new Message.RecipientType[] { Message.RecipientType.TO, Message.RecipientType.CC })
 				outgoingMessage.setRecipients(recipientType, incomingMessage.getRecipients(recipientType));
 		}
@@ -45,44 +82,34 @@ public class MailListServlet extends HttpServlet
 		}
 	}
 	
-	protected String findPool(final MimeMessage incomingMessage) throws MessagingException, NoSuchElementException
+	protected Iterable<Address> evalAddresses(final Iterable<Address> recipients) throws MessagingException, NoSuchElementException
 	{
-		final Iterable<Address> recipients = Iterables.concat(
-			Arrays.asList(incomingMessage.getRecipients(Message.RecipientType.TO)),
-			Arrays.asList(incomingMessage.getRecipients(Message.RecipientType.CC))
-		);
+		final Set<Address> processed = new HashSet<Address>();
 		
-		final Iterable<Address> santaRecipients = Iterables.filter(recipients, new Predicate<Address>()
+		final Iterable<Address> toProcess = Iterables.filter(recipients, new Predicate<Address>()
 		{
 			public boolean apply(final Address recipient)
 			{
-				try
-				{
-					return ((InternetAddress)recipient).getAddress().toLowerCase().endsWith("appspotmail.com");
-				}
-				catch(final ClassCastException ex)
-				{
-					return false;
-				}
+				return recipient instanceof InternetAddress && ((InternetAddress)recipient).getAddress().toLowerCase().endsWith(emailDomainSuffix);
 			}
 		});
 		
-		final Iterable<String> emailNames = Iterables.transform(santaRecipients, new Function<Address, String>()
+		final Iterable<Address> listRecipients = Iterables.filter(toProcess, new Predicate<Address>()
 		{
-			public String apply(final Address recipient)
+			public boolean apply(final Address recipient)
 			{
-				final String address = ((InternetAddress)recipient).getAddress().toLowerCase();
-				return address.substring(0, address.indexOf("@"));
+				return ((InternetAddress)recipient).getAddress().toLowerCase().startsWith(LIST_EMAIL_PREFIX);
 			}
 		});
 		
-		return Iterables.find(emailNames, new Predicate<String>()
+		for(final Address listAddress : listRecipients)
 		{
-			
-			public boolean apply(final String address)
-			{
-				return address.startsWith(LIST_EMAIL_PREFIX);
-			}
-		}).substring(LIST_EMAIL_PREFIX.length());
+			final String email = ((InternetAddress)listAddress).getAddress();
+			final String list = email.substring(LIST_EMAIL_PREFIX.length(), email.indexOf("@"));
+			for(final InternetAddress address : Iterables.transform(stateManager.getUsersInPool(list), STRING_TO_ADDRESS))
+				processed.add(address);
+		}
+		
+		return processed;
 	}
 }
