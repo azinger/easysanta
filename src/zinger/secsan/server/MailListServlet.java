@@ -67,14 +67,26 @@ public class MailListServlet extends HttpServlet
 		{
 			final MimeMessage incomingMessage = new MimeMessage(mailSession, request.getInputStream());
 			
-			//final String pool = findPool(incomingMessage);
+			final Address sender = incomingMessage.getSender();
 			
-			final MimeMessage outgoingMessage = new MimeMessage(mailSession);
+			// Note: in the following passage, we'll mark rejected addresses under BCC routing list
+			final SetMultimap<Message.RecipientType, Address> routing = HashMultimap.create();
+			for(final Message.RecipientType recipientType : Arrays.asList(Message.RecipientType.TO, Message.RecipientType.CC))
+			{
+				final Pair<? extends Iterable<Address>, ? extends Iterable<Address>> recipientTypeRouting = routeAddresses(incomingMessage.getRecipients(recipientType), sender);
+				routing.putAll(recipientType, recipientTypeRouting.head);
+				routing.putAll(Message.RecipientType.BCC, recipientTypeRouting.tail);
+			}
 			
-			//outgoingMessage.setSender(incomingMessage.getSender());
-			//outgoingMessage.setSender(
-			for(final Message.RecipientType recipientType : new Message.RecipientType[] { Message.RecipientType.TO, Message.RecipientType.CC })
-				outgoingMessage.setRecipients(recipientType, incomingMessage.getRecipients(recipientType));
+			if(routing.containsKey(Message.RecipientType.TO) || routing.containsKey(Message.RecipientType.CC))
+			{
+				// TO DO: send forward
+			}
+			
+			if(routing.containsKey(Message.RecipientType.BCC))
+			{
+				// TO DO: send rejection
+			}
 		}
 		catch(final MessagingException ex)
 		{
@@ -82,9 +94,10 @@ public class MailListServlet extends HttpServlet
 		}
 	}
 	
-	protected Iterable<Address> evalAddresses(final Iterable<Address> recipients) throws MessagingException, NoSuchElementException
+	protected Pair<? extends Iterable<Address>, ? extends Iterable<Address>> routeAddresses(final Iterable<Address> recipients, final Address sender) throws MessagingException, NoSuchElementException
 	{
 		final Set<Address> processed = new HashSet<Address>();
+		final Set<Address> rejected = new HashSet<Address>();
 		
 		final Iterable<Address> toProcess = Iterables.filter(recipients, new Predicate<Address>()
 		{
@@ -106,10 +119,22 @@ public class MailListServlet extends HttpServlet
 		{
 			final String email = ((InternetAddress)listAddress).getAddress();
 			final String list = email.substring(LIST_EMAIL_PREFIX.length(), email.indexOf("@"));
-			for(final InternetAddress address : Iterables.transform(stateManager.getUsersInPool(list), STRING_TO_ADDRESS))
-				processed.add(address);
+			final Set<String> usersInPool = stateManager.getUsersInPool(list);
+			if(usersInPool.contains(((InternetAddress)sender).getAddress()))
+			{
+				for(final InternetAddress address : Iterables.transform(usersInPool, STRING_TO_ADDRESS))
+					processed.add(address);
+			}
+			else
+				for(final InternetAddress address : Iterables.transform(usersInPool, STRING_TO_ADDRESS))
+					rejected.add(address);
 		}
 		
-		return processed;
+		return Pair.of(processed, rejected);
+	}
+	
+	protected Pair<? extends Iterable<Address>, ? extends Iterable<Address>> routeAddresses(final Address[] recipients, final Address sender) throws MessagingException, NoSuchElementException
+	{
+		return routeAddresses(Arrays.asList(recipients), sender);
 	}
 }
