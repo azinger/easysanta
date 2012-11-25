@@ -57,8 +57,13 @@ public class MailListServlet extends HttpServlet
 	public void init(final ServletConfig config)
 	{
 		appId = config.getInitParameter("appId");
+		if(appId == null)
+			appId = config.getServletContext().getInitParameter("appId");
 		emailDomainSuffix = appId + DOMAIN_SUFFIX;
 		sysEmail = "system@" + emailDomainSuffix;
+		
+		log.info("email domain suffix: " + emailDomainSuffix);
+		log.info("list email prefix: " + LIST_EMAIL_PREFIX);
 	}
 	
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
@@ -69,7 +74,9 @@ public class MailListServlet extends HttpServlet
 		{
 			final MimeMessage incomingMessage = new MimeMessage(mailSession, request.getInputStream());
 			
-			final Address sender = incomingMessage.getSender();
+			Address sender = incomingMessage.getSender();
+			if(sender == null)
+				sender = incomingMessage.getFrom()[0];
 			
 			// Note: in the following passage, we'll mark rejected addresses under BCC routing list
 			final SetMultimap<Message.RecipientType, Address> routing = HashMultimap.create();
@@ -79,6 +86,7 @@ public class MailListServlet extends HttpServlet
 				routing.putAll(recipientType, recipientTypeRouting.head);
 				routing.putAll(Message.RecipientType.BCC, recipientTypeRouting.tail);
 			}
+			log.info("Routing: " + routing);
 			
 			if(routing.containsKey(Message.RecipientType.TO) || routing.containsKey(Message.RecipientType.CC))
 				routeMessage(mailSession, incomingMessage, routing.get(Message.RecipientType.TO), routing.get(Message.RecipientType.CC));
@@ -133,7 +141,9 @@ public class MailListServlet extends HttpServlet
 	
 	protected Pair<? extends Iterable<Address>, ? extends Iterable<Address>> routeAddresses(final Address[] recipients, final Address sender) throws MessagingException, NoSuchElementException
 	{
-		return routeAddresses(Arrays.asList(recipients), sender);
+		return recipients == null ?
+			routeAddresses((Set<Address>)Collections.EMPTY_SET, sender) :
+			routeAddresses(Arrays.asList(recipients), sender);
 	}
 	
 	protected void routeMessage(
