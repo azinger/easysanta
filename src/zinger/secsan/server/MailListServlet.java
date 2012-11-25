@@ -16,7 +16,7 @@ import javax.servlet.http.*;
 import zinger.secsan.client.*;
 import zinger.secsan.db.*;
 
-public class MailServlet extends HttpServlet
+public class MailListServlet extends HttpServlet
 {
 	protected final Logger log = Logger.getLogger(getClass().getName());
 	
