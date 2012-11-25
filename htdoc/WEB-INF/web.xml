@@ -30,8 +30,8 @@
 	</servlet>
 	
 	<servlet>
-		<servlet-name>mail</servlet-name>
-		<servlet-class>zinger.secsan.server.MailServlet</servlet-class>
+		<servlet-name>mail_list</servlet-name>
+		<servlet-class>zinger.secsan.server.MailListServlet</servlet-class>
 	</servlet>
 	
 	<servlet-mapping>
@@ -54,7 +54,7 @@
 	</servlet-mapping>
 	
 	<servlet-mapping>
-		<servlet-name>mail</servlet-name>
+		<servlet-name>mail_list</servlet-name>
 		<url-pattern>/_ah/mail/list*</url-pattern>
 	</servlet-mapping>
 	
