@@ -60,7 +60,7 @@
 	
 	<servlet-mapping>
 		<servlet-name>mail_list</servlet-name>
-		<url-pattern>/_ah/mail/list*</url-pattern>
+		<url-pattern>/_ah/mail/*</url-pattern>
 	</servlet-mapping>
 	
     <security-constraint>
