@@ -163,6 +163,24 @@ public class MailListServlet extends HttpServlet
 		outgoingMessage.setFrom(sender);
 		outgoingMessage.setSubject(incomingMessage.getSubject());
 		
+		if(to.isEmpty())
+		{
+			if(cc.isEmpty())
+				throw new IllegalArgumentException("Must specify at least one valid recipient.");
+			for(final Address ccRecipient : cc)
+				outgoingMessage.addRecipient(Message.RecipientType.TO, ccRecipient);
+		}
+		else
+		{
+			for(final Address toRecipient : to)
+				outgoingMessage.addRecipient(Message.RecipientType.TO, toRecipient);
+			if(!cc.isEmpty())
+			{
+				for(final Address ccRecipient : cc)
+					outgoingMessage.addRecipient(Message.RecipientType.CC, ccRecipient);
+			}
+		}
+		
 		final Object originalContent = incomingMessage.getContent();
 		if(originalContent instanceof Multipart)
 			outgoingMessage.setContent((Multipart)originalContent);
