@@ -80,16 +80,21 @@ public class MailListServlet extends HttpServlet
 			
 			// Note: in the following passage, we'll mark rejected addresses under BCC routing list
 			final SetMultimap<Message.RecipientType, Address> routing = HashMultimap.create();
+			final Set<Address> processedLists = new HashSet<Address>();
 			for(final Message.RecipientType recipientType : Arrays.asList(Message.RecipientType.TO, Message.RecipientType.CC))
 			{
-				final Pair<? extends Iterable<Address>, ? extends Iterable<Address>> recipientTypeRouting = routeAddresses(incomingMessage.getRecipients(recipientType), sender);
-				routing.putAll(recipientType, recipientTypeRouting.head);
-				routing.putAll(Message.RecipientType.BCC, recipientTypeRouting.tail);
+				final Map<Address, Pair<? extends Iterable<Address>, ? extends Iterable<Address>>> recipientTypeRouting = routeAddresses(incomingMessage.getRecipients(recipientType), sender);
+				for(final Pair<? extends Iterable<Address>, ? extends Iterable<Address>> listRouting : recipientTypeRouting.values())
+				{
+					routing.putAll(recipientType, listRouting.head);
+					routing.putAll(Message.RecipientType.BCC, listRouting.tail);
+				}
+				processedLists.addAll(recipientTypeRouting.keySet());
 			}
 			log.info("Routing: " + routing);
 			
 			if(routing.containsKey(Message.RecipientType.TO) || routing.containsKey(Message.RecipientType.CC))
-				routeMessage(mailSession, incomingMessage, routing.get(Message.RecipientType.TO), routing.get(Message.RecipientType.CC));
+				routeMessage(mailSession, incomingMessage, processedLists, routing.get(Message.RecipientType.TO), routing.get(Message.RecipientType.CC));
 			
 			if(routing.containsKey(Message.RecipientType.BCC))
 				rejectMessage(mailSession, incomingMessage, routing.get(Message.RecipientType.BCC));
@@ -100,10 +105,9 @@ public class MailListServlet extends HttpServlet
 		}
 	}
 	
-	protected Pair<? extends Iterable<Address>, ? extends Iterable<Address>> routeAddresses(final Iterable<Address> recipients, final Address sender) throws MessagingException, NoSuchElementException
+	protected Map<Address, Pair<? extends Iterable<Address>, ? extends Iterable<Address>>> routeAddresses(final Iterable<Address> recipients, final Address sender) throws MessagingException, NoSuchElementException
 	{
-		final Set<Address> processed = new HashSet<Address>();
-		final Set<Address> rejected = new HashSet<Address>();
+		final Map<Address, Pair<? extends Iterable<Address>, ? extends Iterable<Address>>> results = new HashMap<Address, Pair<? extends Iterable<Address>, ? extends Iterable<Address>>>();
 		
 		final Iterable<Address> toProcess = Iterables.filter(recipients, new Predicate<Address>()
 		{
@@ -123,6 +127,10 @@ public class MailListServlet extends HttpServlet
 		
 		for(final Address listAddress : listRecipients)
 		{
+			final Set<Address> processed = new HashSet<Address>();
+			final Set<Address> rejected = new HashSet<Address>();
+			results.put(listAddress, Pair.of(processed, rejected));
+			
 			final String email = ((InternetAddress)listAddress).getAddress();
 			final String list = email.substring(LIST_EMAIL_PREFIX.length(), email.indexOf("@"));
 			final Set<String> usersInPool = stateManager.getUsersInPool(list);
@@ -136,10 +144,10 @@ public class MailListServlet extends HttpServlet
 					rejected.add(address);
 		}
 		
-		return Pair.of(processed, rejected);
+		return results;
 	}
 	
-	protected Pair<? extends Iterable<Address>, ? extends Iterable<Address>> routeAddresses(final Address[] recipients, final Address sender) throws MessagingException, NoSuchElementException
+	protected Map<Address, Pair<? extends Iterable<Address>, ? extends Iterable<Address>>> routeAddresses(final Address[] recipients, final Address sender) throws MessagingException, NoSuchElementException
 	{
 		return recipients == null ?
 			routeAddresses((Set<Address>)Collections.EMPTY_SET, sender) :
@@ -148,18 +156,16 @@ public class MailListServlet extends HttpServlet
 	
 	protected void routeMessage(
 		final Session mailSession, 
-		final MimeMessage incomingMessage, 
+		final MimeMessage incomingMessage,
+		final Collection<Address> lists, 
 		final Collection<Address> to, 
 		final Collection<Address> cc
 	) throws MessagingException, IOException
 	{
 		final MimeMessage outgoingMessage = new MimeMessage(mailSession);
-		final Address sender = 
-			!to.isEmpty() ?
-				to.iterator().next() :
-				!cc.isEmpty() ?
-					cc.iterator().next() :
-					new InternetAddress(sysEmail);
+		final Address sender = !lists.isEmpty() ?
+			lists.iterator().next() :
+			new InternetAddress(sysEmail);
 		outgoingMessage.setFrom(sender);
 		outgoingMessage.setSubject(incomingMessage.getSubject());
 		
