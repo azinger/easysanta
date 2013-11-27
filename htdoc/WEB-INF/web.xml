@@ -9,6 +9,11 @@
 		<param-value>false</param-value>
 	</context-param>
 	-->
+	
+	<context-param>
+		<param-name>appId</param-name>
+		<param-value>give2friends</param-value>
+	</context-param>
  	
 	<listener>
 		<listener-class>zinger.secsan.db.JdoStateManager</listener-class>
@@ -29,6 +34,11 @@
 		<servlet-class>zinger.secsan.server.EmailAnonServlet</servlet-class>
 	</servlet>
 	
+	<servlet>
+		<servlet-name>mail_list</servlet-name>
+		<servlet-class>zinger.secsan.server.MailListServlet</servlet-class>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>back-end</servlet-name>
 		<url-pattern>/back-end</url-pattern>
@@ -46,6 +56,11 @@
 	<servlet-mapping>
 		<servlet-name>emailanon</servlet-name>
 		<url-pattern>/_ah/mail/anon*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>mail_list</servlet-name>
+		<url-pattern>/_ah/mail/*</url-pattern>
 	</servlet-mapping>
 	
     <security-constraint>

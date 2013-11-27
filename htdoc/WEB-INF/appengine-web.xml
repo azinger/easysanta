@@ -13,4 +13,8 @@
     <!-- deserialize incoming requests.                                     -->
     <include path="**/*.gwt.rpc" />
   </resource-files>
+
+	<inbound-services>
+		<service>mail</service>
+	</inbound-services>
 </appengine-web-app>
