@@ -141,7 +141,7 @@ public class MailListServlet extends HttpServlet
 			}
 			else
 				for(final InternetAddress address : Iterables.transform(usersInPool, STRING_TO_ADDRESS))
-					rejected.add(address);
+					rejected.add(listAddress);
 		}
 		
 		return results;
