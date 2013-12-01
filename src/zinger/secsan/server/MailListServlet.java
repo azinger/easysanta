@@ -211,6 +211,18 @@ public class MailListServlet extends HttpServlet
 		final Collection<Address> rejected
 	) throws MessagingException
 	{
-		throw new UnsupportedOperationException();
+		final MimeMessage outgoingMessage = new MimeMessage(mailSession);
+		outgoingMessage.setFrom(new InternetAddress(sysEmail));
+		outgoingMessage.setSubject("Rejected: " + incomingMessage.getSubject());
+		outgoingMessage.setRecipients(Message.RecipientType.TO, incomingMessage.getFrom());
+		
+		final StringBuilder sb = new StringBuilder()
+			.append("Your email could not be delivered to the following addresses:\n");
+		for(final Address rejectedAddress : rejected)
+			sb.append("\n").append(rejectedAddress);
+		
+		outgoingMessage.setText(sb.toString());
+		
+		Transport.send(outgoingMessage);
 	}
 }
