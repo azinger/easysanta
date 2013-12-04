@@ -14,6 +14,7 @@ public interface BackEndServiceAsync
 	public void getUsersInPool(String pool, AsyncCallback<Set<String>> callback);
 	public void addToPool(String user, String pool, AsyncCallback<Void> callback);
 	public void removeFromPool(String user, String pool, AsyncCallback<Void> callback);
+	public void removeUsersFromPool(String pool, Iterable<String> users, AsyncCallback<Void> callback);
 	
 	public void shufflePool(String pool, AsyncCallback<Void> callback);
 	public void isPoolShuffled(String pool, AsyncCallback<Boolean> callback);

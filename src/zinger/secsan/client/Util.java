@@ -78,6 +78,11 @@ public class Util
 	
 	public static void validStrings(final String... strings) throws IllegalArgumentException
 	{
+		validStrings(Arrays.asList(strings));
+	}
+	
+	public static void validStrings(final Iterable<String> strings) throws IllegalArgumentException
+	{
 		for(final String string : strings)
 		{
 			if(string == null || string.startsWith("="))

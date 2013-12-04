@@ -14,10 +14,12 @@ import static zinger.secsan.client.Util.*;
 public class PoolUi extends Composite
 {
 	protected final Set<String> users = new HashSet<String>();
+	protected final Map<String, Widget> selectedUsers = new HashMap<String, Widget>();
 	protected final String pool;
 	protected final Panel container = new VerticalPanel();
 	protected final Label statusOutput = new InlineLabel();
 	protected final ButtonBase remindAssignmentButton = new Button("Remind Me Who I Am Assigned To");
+	protected final ButtonBase removeUsersButton = new Button("Remove Selected Users");
 	
 	public PoolUi(final String pool)
 	{
@@ -26,6 +28,8 @@ public class PoolUi extends Composite
 		final TextBoxBase newUserInput = new TextBox();
 		final ButtonBase newUserButton = new Button("Add Email");
 		final ButtonBase shuffleButton = new Button("Shuffle Pool");
+		
+		removeUsersButton.setEnabled(false);
 		
 		setWidget(panel(
 			new VerticalPanel(),
@@ -38,7 +42,8 @@ public class PoolUi extends Composite
 			),
 			statusOutput,
 			shuffleButton,
-			remindAssignmentButton
+			remindAssignmentButton,
+			removeUsersButton
 		));
 		
 		showStatus();
@@ -88,6 +93,40 @@ public class PoolUi extends Composite
 				remindAssignment();
 			};
 		});
+		
+		removeUsersButton.addClickHandler(new ClickHandler()
+		{
+			public void onClick(final ClickEvent ev)
+			{
+				final Set<String> selectedUserKeys = selectedUsers.keySet();
+				if(Window.confirm("Remove " + selectedUserKeys + " from " + pool + "?"))
+				{
+					users.removeAll(selectedUserKeys);
+					for(final Widget selectedUserDisplay : selectedUsers.values())
+						container.remove(selectedUserDisplay);
+					backEnd().removeUsersFromPool(pool, new HashSet<String>(selectedUserKeys), new AsyncCallback<Void>()
+					{
+						protected void reset()
+						{
+							selectedUsers.clear();
+							removeUsersButton.setEnabled(false);
+						}
+					
+						public void onSuccess(final Void v)
+						{
+							reset();
+						}
+
+						public void onFailure(final Throwable ex)
+						{
+							reset();
+							Window.alert(ex.getMessage());
+							showStatus();
+						}
+					});
+				}
+			}
+		});
 	}
 	
 	public void addUser(final String user)
@@ -99,33 +138,24 @@ public class PoolUi extends Composite
 	protected void showUser(final String user)
 	{
 		users.add(user);
-		final ButtonBase removeButton = new Button("x");
-		final Widget display = panel(
-			new HorizontalPanel(),
-			new InlineLabel(user),
-			removeButton
-		);
+		
+		final CheckBox userCheckBox = new CheckBox(user);
+		final Widget display = userCheckBox;
+		
 		container.add(display);
-		removeButton.addClickHandler(new ClickHandler()
+		
+		userCheckBox.addValueChangeHandler(new ValueChangeHandler<Boolean>()
 		{
-			public void onClick(final ClickEvent ev)
+			public void onValueChange(final ValueChangeEvent<Boolean> ev)
 			{
-				users.remove(user);
-				container.remove(display);
-				backEnd().removeFromPool(user, pool, new AsyncCallback<Void>()
-				{
-					public void onSuccess(final Void v)
-					{
-						showStatus();
-					}
-					
-					public void onFailure(final Throwable ex)
-					{
-						Window.alert(ex.getMessage());
-					}
-				});
+				if(ev.getValue())
+					selectedUsers.put(user, display);
+				else
+					selectedUsers.remove(user);
+				removeUsersButton.setEnabled(!selectedUsers.isEmpty());
 			}
 		});
+		
 		showStatus();
 	}
 	

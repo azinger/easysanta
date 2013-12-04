@@ -16,6 +16,7 @@ public interface BackEndService extends RemoteService
 	public Set<String> getUsersInPool(String pool) throws InsufficientPrivilegesException, NotFoundException;
 	public void addToPool(String user, String pool) throws InsufficientPrivilegesException, NotFoundException, IllegalArgumentException;
 	public void removeFromPool(String user, String pool) throws InsufficientPrivilegesException, NotFoundException;
+	public void removeUsersFromPool(String pool, Iterable<String> users) throws InsufficientPrivilegesException, NotFoundException;
 	
 	public void shufflePool(String pool) throws InsufficientPrivilegesException, NotFoundException;
 	public boolean isPoolShuffled(String pool) throws InsufficientPrivilegesException, NotFoundException;

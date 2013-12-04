@@ -9,6 +9,7 @@ public interface StateManager
 	public Set<String> getUserPools(String user) throws NotFoundException;
 	public void addPool(String user, String pool) throws NotFoundException;
 	public void removePool(String user, String pool);
+	public void removeUsersFromPool(String pool, Iterable<String> users);
 	public Set<String> getUsersInPool(String pool);
 	public Set<String> queryPools(String poolQuery);
 	public String getAssignedToUser(String user, String pool) throws NotFoundException;
