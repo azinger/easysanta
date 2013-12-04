@@ -80,15 +80,18 @@ public class JdoStateManager extends WebStateManager
 		pm.close();
 	}
 	
-	public synchronized void removePool(final String user, final String pool)
+	public synchronized void removeUsersFromPool(final String pool, final Iterable<String> users)
 	{
 		final PersistenceManager pm = this.pmf.getPersistenceManager();
-		pm.currentTransaction().begin();
 		final Query query = pm.newQuery(UserPool.class, "this.user == user && this.pool == pool");
 		query.declareParameters("String user, String pool");
-		for(final UserPool userPool : (Collection<UserPool>)query.execute(user, pool))
-			pm.deletePersistent(userPool);
-		pm.currentTransaction().commit();
+		for(final String user : users)
+		{
+			pm.currentTransaction().begin();
+			for(final UserPool userPool : (Collection<UserPool>)query.execute(user, pool))
+				pm.deletePersistent(userPool);
+			pm.currentTransaction().commit();
+		}
 		pm.close();
 	}
 	

@@ -74,6 +74,8 @@ public class SantaUi implements EntryPoint
 	
 	protected void showPool(final String pool)
 	{
-		container.add(new PoolUi(pool));
+		if(container.iterator().hasNext())
+			container.add(new InlineHTML("<hr>"));
+		container.add(css(new PoolUi(pool), "pool"));
 	}
 }

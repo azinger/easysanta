@@ -33,4 +33,9 @@ public abstract class WebStateManager implements StateManager, ServletContextLis
 		}
 		return false;
 	}
+	
+	public void removePool(final String user, final String pool)
+	{
+		removeUsersFromPool(pool, Arrays.asList(user));
+	}
 }

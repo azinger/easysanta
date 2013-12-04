@@ -84,9 +84,15 @@ public class BackEndServiceImpl extends RemoteServiceServlet implements BackEndS
 	
 	public void removeFromPool(final String user, final String pool) throws InsufficientPrivilegesException, NotFoundException
 	{
-		validStrings(user, pool);
+		removeUsersFromPool(pool, Arrays.asList(user));
+	}
+	
+	public void removeUsersFromPool(final String pool, final Iterable<String> users) throws InsufficientPrivilegesException, NotFoundException
+	{
+		validStrings(pool);
+		validStrings(users);
 		getLoggedInUser();
-		StateManagerFactory.INSTANCE.getStateManager().removePool(user, pool);
+		StateManagerFactory.INSTANCE.getStateManager().removeUsersFromPool(pool, users);
 	}
 	
 	public void shufflePool(final String pool) throws InsufficientPrivilegesException, NotFoundException
