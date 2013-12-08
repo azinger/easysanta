@@ -33,15 +33,21 @@ public class BackEndServiceImpl extends RemoteServiceServlet implements BackEndS
 		return StateManagerFactory.INSTANCE.getStateManager().getUserPools(this.getLoggedInUser());
 	}
 	
+	protected void assertMyPool(final String pool) throws InsufficientPrivilegesException, NotFoundException
+	{
+		final String user = getLoggedInUser();
+		final Set<String> usersInPool = getUsersInPool(pool);
+		if(!usersInPool.isEmpty() && !usersInPool.contains(user))
+			throw new InsufficientPrivilegesException("This pool exists and does not belong to you.");
+	}
+	
 	public void joinPool(final String pool) throws InsufficientPrivilegesException, NotFoundException
 	{
 		validStrings(pool);
 		final String user = getLoggedInUser();
 		try
 		{
-			final Set<String> usersInPool = getUsersInPool(pool);
-			if(!usersInPool.isEmpty() && !usersInPool.contains(user))
-				throw new InsufficientPrivilegesException("You are not authorized to join this existing pool.");
+			assertMyPool(pool);
 		}
 		catch(final NotFoundException ex)
 		{
@@ -91,7 +97,7 @@ public class BackEndServiceImpl extends RemoteServiceServlet implements BackEndS
 	{
 		validStrings(pool);
 		validStrings(users);
-		getLoggedInUser();
+		assertMyPool(pool);
 		StateManagerFactory.INSTANCE.getStateManager().removeUsersFromPool(pool, users);
 	}
 	
