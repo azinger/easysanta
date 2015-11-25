@@ -24,7 +24,6 @@ A user pool is always in one of two states: shuffled or not shuffled.  A shuffle
 Upon successful shuffling of a pool, the system will contact each member by email, notifying them of their assignment.  Each member of the pool can subsequently log into the application and request the same reminder be sent to them at any time.  Shuffling an already shuffled pool is permissible and will result in new assignments being sent out.
 
 ## Known Issues
-* Help section is empty.
 * There's a bunch of unused and commented out code.
 * Email pattern regular expression may have a bug in it.
 * JDO and Big Table is a combination of ill-fitting abstractions resulting in suboptimal performance and long start-up times.  On the plus side, we're all busy people these days and such slow-downs give us precious opportunities to consider heady topics like why god allows bad things to happen to good people and did I really turn off the stove.
