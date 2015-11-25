@@ -8,8 +8,36 @@
 			<a href="index.jsp">Home</a> | Help
 		</div>
 		
-<div class="help_rhyme">
-<h3>TBD...</h3>
-		
+		<div class="help_rhyme">
+			<h3>What</h3>
+			<p>
+			If you've ever attempted to play <a href="https://en.wikipedia.org/wiki/Secret_Santa">Secret Santa</a> by drawing names out of a hat, you know it can be difficult to avoid problematic drawings, where someoneone in your party draws their own name.  Easy Santa is a non-commercial, <a href="https://github.com/azinger/easysanta">open source</a> system designed to assign gifter-giftee pairings in secret without collisions.
+		</div>
+
+		<div class="help_rhyme">
+			<h3>How</h3>
+			<p>
+				In Easy Santa, a list of people wishing to be assigned giftees is called a pool.  Creating a pool must be done by a logged in user specifying a unique name for this pool.  The name must be a single word, but special characters like dots, dashes, and underscores are allowed.  After a pool is created, its creator is automatically added to it and they can begin to add others to it by specifying their email addresses.  Any user can be a member of any number of pools.
+			</p>
+
+			<p>
+				Subsequent administration of pools is performed by any user who is a member of a given pool logging into the system and adding users to or removing users from the pool.  A user can remove themselves from the pool.
+			</p>
+
+			<p>
+				When everyone is ready, one of the pool members logs into the system and clicks "Shuffle Pool" button.  This causes the system to create new assignments and send an email to each member with information about their assigned giftee.  If the pool has 2 or more members in it, the system guarantees that no one will be assigned themselves.
+			</p>
+
+			<p>
+				If a member of the pool loses the email with their assignment information, they can log into the system and click "Remind Me Who I Am Assigned To" button to generate another email with this information to be sent just to them.  Be sure not to click "Shuffle Pool" for a second time, as this would cause new assignments to be created.
+			</p>
+		</div>
+
+		<div class="help_rhyme">
+			<h3>And Also...</h3>
+			<p>
+				In addition to "secret" communication needed to create assignments between gifters and giftees, Easy Santa also allows its users to communicate with the group with a mailing list feature.  For any pool a user has access to, they can send an email to "list-<pool name>@appspotmail.com" and have that email delivered to all members of the pool.  For example, a pool named "MyPool" will have "list-MyPool@appspotmail.com" email address associated with it.
+			</p>
+		</div>
 	</body>
 </html>
