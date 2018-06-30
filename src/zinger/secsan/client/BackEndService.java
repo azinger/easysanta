@@ -1,6 +1,5 @@
 package zinger.secsan.client;
 
-import com.google.gwt.rpc.client.*;
 import com.google.gwt.user.client.rpc.*;
 
 import java.util.*;

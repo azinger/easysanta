@@ -3,9 +3,6 @@
 	<property file="${basedir}/build.properties"/>
 	
 	<path id="libs">
-		<fileset dir="${httpclient.home}/lib" includes="http*.jar"/>
-		<fileset dir="${bsheet.home}" includes="bsheet_bundle.jar"/>
-		<!--fileset dir="${hsqldb.home}/lib" includes="hsqldb.jar"-->
 		<fileset dir="${guava.home}" includes="*.jar" excludes="*gwt*.jar"/>
 		<fileset dir="${gaesdk.home}/lib/user" includes="**/*.jar"/>
 		<fileset dir="${gaesdk.home}/lib/user/orm" includes="*.jar"/>
@@ -57,7 +54,7 @@
 				<pathelement location="${src.home}"/>
 				<path refid="cp"/>
 			</classpath>
-			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Xmx512M"/>
 			<arg value="-style"/><arg value="PRETTY"/>
 			<arg value="-war"/><arg value="${war.home}"/>
 			<arg value="${mod.name}"/>
